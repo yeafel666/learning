@@ -1,0 +1,123 @@
+@CHARSET "UTF-8";
+
+#headnav {
+    background: url("../img/videoImg/header_bg.png") 0 -50px repeat-x;
+}
+
+#headnav .title {
+    color: white;
+    font-size: 33px;
+    height: 100%;
+    width: 60%;
+    line-height: 45px;
+    text-indent: 20px;
+    letter-spacing: 4px;
+    font-family: "黑体";
+    font-weight: bold;
+    display: inline-block;
+
+}
+
+#headnav .theme {
+    height: 100%;
+    width: 39%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.theme {
+    font-size: 25px;
+    color: yellow;
+    height: 50%;
+}
+
+.theme span {
+    float: right;
+    width: 25px;
+    height: 15px;
+    display: inline-block;
+    margin-top: -5px;
+}
+
+.theme .Gray {
+    color: gray;
+}
+
+.theme .Metro {
+    color: #ddd;
+}
+
+.theme .Black {
+    color: Black;
+}
+
+.theme .Bootstrap {
+    color: #D4D4D4;
+}
+
+.theme .Material {
+    color: #eee;
+}
+
+.theme .Default {
+    color: #CCE6FF;
+}
+
+.theme div {
+    text-align: right;
+    margin-top: 15px;
+}
+
+.theme div a {
+    font-size: 14px;
+    color: white;
+}
+
+/*视频暂停时也显示这个播放按钮*/
+.vjs-paused .vjs-big-play-button, .vjs-paused.vjs-has-started .vjs-big-play-button {
+    display: block;
+}
+
+.video-js .vjs-big-play-button {
+    font-size: 2.5em;
+    line-height: 2.3em;
+    height: 2.5em;
+    width: 2.5em;
+    -webkit-border-radius: 2.5em;
+    -moz-border-radius: 2.5em;
+    border-radius: 2.5em;
+    background-color: #73859f;
+    background-color: rgba(115, 133, 159, .5);
+    border-width: 0.15em;
+    margin-top: -1.25em;
+    margin-left: -1.75em;
+}
+
+/* 中间的播放箭头 */
+.vjs-big-play-button .vjs-icon-placeholder {
+    font-size: 1.63em;
+}
+
+/* 加载圆圈 */
+.vjs-loading-spinner {
+    font-size: 2.5em;
+    width: 2em;
+    height: 2em;
+    border-radius: 1em;
+    margin-top: -1em;
+    margin-left: -1.5em;
+}
+
+/*点击屏幕播放/暂停*/
+.video-js.vjs-playing .vjs-tech {
+    pointer-events: auto;
+}
+
+/*显示当前的播放时间，以及总共视频时长*/
+.video-js .vjs-time-control {
+    display: block;
+}
+
+.video-js .vjs-remaining-time {
+    display: none;
+}

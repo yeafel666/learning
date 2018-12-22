@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>在线学习系统</title>
+    <link rel="stylesheet" href="./layui/css/layui.css">
+    <link rel="stylesheet" href="./css/treemenu.css">
+</head>
+<body class="layui-layout-body">
+ <div class="layui-layout layui-layout-admin">
+    <div class="layui-header  "  style="background-color: #35414F">
+        <ul class="layui-nav layui-bg-green" >
+            <a href="main.html"><img  style="width: 200px;height:63px;margin-left: -20px" src="img/content/logo.png"></a>
+            <li class="layui-nav-item" style="font-size:30px;position: absolute;left:580px;letter-spacing: 10px;color:lightgray">在线学习后台管理系统</li>
+        </ul>
+        <!--     头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-right ">
+            <li class="layui-nav-item" id="userInfo" style="right: 80px;color: lightgray"></li>
+            <li class="layui-nav-item" style="top: 18px;right:20px;top: 0px;position: absolute"><button class="layui-btn layui-bg-blue " id="exitUser">注销</button></li>
+        </ul>
+    </div>
+
+
+    <div class="layui-side " style="height: 100%;background-color: #35414F">
+        <div class="layui-side-scroll layui-bg-green" >
+            <div id="sidemenubar" lay-filter="test"></div>
+        </div>
+    </div>
+
+
+
+     <div class="layui-body" >
+         <div class="content" style="height: 100%">
+             <iframe   src="content.html" name="content" width="100%" height="100%" frameborder="0" scrolling="auto"></iframe>
+         </div>
+     </div>
+
+     <div class="layui-footer" style="background-color: #ffffff">
+         ©在线学习系统 -by yeafel(康一凡)
+     </div>
+ </div>
+ <script src="./layui/layui.all.js"></script>
+ <script>
+     //JavaScript代码区域
+     layui.use('element', function(){
+         var element = layui.element,
+             $ = layui.jquery;
+
+
+
+         $.ajax({
+             url:"http://localhost:8080/learning/user/getUserInfo",
+             type:"get",
+             data:{},
+             dataType:"json",
+             success:function(data){
+                 var username = data.data.username;
+                 var userNo = data.data.userNo;
+                 $("#userInfo").text(username + "    " + userNo);
+
+             },
+             error:function(xmlHttpRequest,textStatus,errorThrown){
+                 alert("用户已过期，请重新登录");
+                 // alert(textStatus+"出错！"+errorThrown);
+             }
+         });
+
+
+         $("#exitUser").click(function(){
+             $.ajax({
+                 url:"http://localhost:8080/learning/user/exitUser",
+                 type:"get",
+                 data:{},
+                 dataType:"json",
+                 success:function(data){
+                     window.location.href ="login.html";
+                 },
+                 error:function(xmlHttpRequest,textStatus,errorThrown){
+                     alert(textStatus+"出错！"+errorThrown);
+                 }
+             });
+         });
+
+
+         //添加选中颜色显示
+
+         $("body").on("mouseover", ".layui-tree a", function() {
+
+             if(!$(this).siblings('ul').length) {
+
+                 $(".layui-tree a").removeClass('active');
+
+                 $(this).find('cite').parent().addClass('active');
+
+             }
+
+         });
+
+
+         $.ajax({
+             url:"http://localhost:8080/learning/tree/getTree",
+             type:"get",
+             data:{},
+             dataType:"json",
+             success:function(data){
+                 layui.tree({
+                     elem: '#sidemenubar' //传入元素选择器
+                     ,skin: 'sidebar'  //自定义tree样式的类名
+                     ,nodes: [data.data]
+                     ,target:'content'
+                     ,click: function(node,item){
+                         //node即为当前点击的节点数据,item就是被点击的a标签对象了
+                         //导航按钮选中当前
+                         $('#sidemenubar a').removeClass('active');
+                         $(item).addClass('active');
+                         $(item).siblings('.layui-tree-spread').click();
+                     }
+                 });
+                 // alert(data.data.actionName);
+             },
+             error:function(xmlHttpRequest,textStatus,errorThrown){
+                 alert(textStatus+"出错！"+errorThrown);
+             }
+         });
+
+
+
+
+
+
+
+
+     });
+ </script>
+
+
+
+</body>
+</html>

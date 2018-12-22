@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>学习记录</title>
+    <link rel="stylesheet" href="./layui/css/layui.css" media="all">
+</head>
+<body>
+<blockquote class="layui-elem-quote quoteBox">
+    <form class="layui-form">
+        <div class="layui-inline">
+            <a class="layui-btn layui-btn-danger layui-btn-normal delAll_btn">批量删除</a>
+        </div>
+    </form>
+</blockquote>
+
+<table id="recordlist" lay-filter="recordTable"></table>
+
+<script type="text/html" id="recordlistBar">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+
+
+<script src="./layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+
+
+<script type="text/javascript" charset="utf-8">
+    layui.use([ "table", "jquery" ],  function() {
+            var table = layui.table,
+                $ = layui.$;
+
+            var tableIns = table.render({
+                elem : '#recordlist',
+                cols : [ [ {
+                    type : 'checkbox'
+                }, {
+                    field : "userName",
+                    title : "用户",
+                    align : "center",
+                }, {
+                    field : "coursewareName",
+                    title : "视频名称",
+                    align : "center"
+                }, {
+                    field : "videoCurrentTime",
+                    title : "播放时长(秒)",
+                    align : "center"
+                },{
+                        title : "操作",
+                        width : 170,
+                        fixed : "right",
+                        align : "center",
+                        toolbar : "#recordlistBar"
+                    } ] ],
+                url : 'http://localhost:8080/learning/record/list',
+                cellMinWidth : 80, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+                page : true,
+                limits : [ 3, 5, 10 ],
+            });
+
+
+
+
+            //监听工具条
+            table.on('tool(recordTable)', function(obj) {//注：tool是工具条事件名，demo是table原始容器的属性 lay-filter="对应的值"
+                var data = obj.data;//获得当前行数据
+                if (obj.event === 'detail') {//获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                    layer.alert(JSON.stringify(data));
+                } else if (obj.event === 'del') {
+                    layer.confirm('真的删除行么', {
+                        icon : 3,
+                        title : '提示信息'
+                    }, function(index) {
+                        obj.del();//删除对应行（tr）的DOM结构，并更新缓存
+                        //向服务端发送删除指令
+                        $.post("http://localhost:8080/learning/record/delete", {
+                            id : data.recordId
+                            //将需要删除的newsId作为参数传入
+                        }, function(data) {
+                            tableIns.reload();
+                            layer.close(index);
+                        })
+                    });
+                }
+            });
+
+            // 批量删除
+            $(".delAll_btn").click(
+                function() {
+                    var checkStatus = table.checkStatus('recordlist'), data = checkStatus.data, checkedList = [];
+                    if (data.length > 0) {
+                        for ( var i in data) {
+                            checkedList.push(data[i].recordId);
+                        }
+                        layer.confirm(
+                            '确定删除选中的信息？',
+                            {
+                                icon : 3,
+                                title : '提示信息'
+                            },
+                            function(index) {
+                                $.post(
+                                    "http://localhost:8080/learning/record/delete",
+                                    {
+                                        "delitems" : checkedList.toString()
+                                    },
+                                    function(data) {
+                                        tableIns.reload();
+                                        layer.close(index);
+                                    })
+                            })
+                    } else {
+                        layer.msg("请选择需要删除的信息");
+                    }
+                });
+        });
+</script>
+</body>
+</html>

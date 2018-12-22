@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>视频学习</title>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+</head>
+<body>
+<div class="layui-header  "  style="background-color: #35414F">
+    <ul class="layui-nav layui-bg-black" >
+        <li class="layui-nav-item" style="font-size:30px;position: absolute;left: 38%;letter-spacing: 10px;color:lightgray">Online learning</li>
+    </ul>
+    <!--     头部区域（可配合layui已有的水平导航） -->
+    <ul class="layui-nav layui-layout-right ">
+        <li class="layui-nav-item" id="userInfo" style="right: 500%;color: lightgray"></li>
+        <li class="layui-nav-item" style="top: 18px;right:120%;top: 0px;position: absolute"><button class="layui-btn layui-bg-blue " id="back">首页</button></li>
+        <li class="layui-nav-item" style="top: 18px;right:10%;top: 0px;position: absolute"><button class="layui-btn layui-bg-blue " id="exitUser">注销</button></li>
+    </ul>
+</div>
+
+<blockquote class="layui-elem-quote quoteBox">
+    <form class="layui-form">
+        <div class="layui-inline" style="margin-left: 40%">
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input searchName" placeholder="名称" />
+            </div>
+            <a class="layui-btn search_btn" data-type="reload">视频检索</a>
+        </div>
+
+        <div class="layui-inline" style="margin-left: 10%">
+            <div class="layui-input-inline">
+                <input id="courseName" name="courseName" type="text" class="layui-input courseName" placeholder="点击这里选择批次" />
+            </div>
+            <a class="layui-btn search_btn" data-type="reload">批次查询</a>
+        </div>
+    </form>
+</blockquote>
+
+<!--<table id="coursewarelist" lay-filter="userTable" class="layui-table" lay-even lay-skin="nob" >
+    &lt;!&ndash;无边框表格（内部结构参见右侧目录“常规用法”）&ndash;&gt;
+</table>-->
+<table id="coursewarelist" lay-filter="userTable"></table>
+
+<script type="text/html" id="coursewarelistBar">
+    <a class="layui-btn layui-btn-xs" lay-event="learn">开始学习</a>
+</script>
+
+<script src="./layui/layui.all.js"></script>
+<script src="layui/lay/modules/tableSelect.js"></script>
+
+<script type="text/javascript">
+
+    var tableSelect = layui.tableSelect;
+
+    /** 监听课程名input框 */
+    tableSelect.render({
+        elem: '#courseName',
+        searchKey: 'courseName',	//搜索输入框的name值 默认keyword
+        searchPlaceholder: '批次搜索',	//搜索输入框的提示文字 默认关键词搜索
+        table: {
+            url:'http://localhost:8080/learning/course/list',
+            cols: [[
+                { type: 'radio' },
+                { field: 'courseId', title: 'ID' },
+                { field: 'courseName', title: '批次名' },
+                { field: 'cnum', title: '编号' }
+            ]],
+            cellMinWidth : 80, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+            height: 150,
+            page : true,
+            limits : [ 3, 5, 10 ],
+        },
+        done: function (elem, data) {
+            var NEWJSON = []
+            layui.each(data.data, function (index, item) {
+                NEWJSON.push(item.courseName)
+            })
+            elem.val(NEWJSON.join(","))
+        }
+    });
+
+</script>
+<script type="text/javascript" charset="utf-8">
+    //JavaScript代码区域
+    layui.use([ "table", "jquery" ,"element"], function(){
+        var element = layui.element,
+            $ = layui.jquery,
+            table = layui.table;
+
+        var tableIns = table.render({
+            elem : '#coursewarelist',
+            cols : [ [ {
+                type : 'checkbox'
+            }, {
+                field : "courseName",
+                title : "课程类别",
+                align : "center",
+                sort: true
+            }, {
+                field : "duration",
+                title : "视频总时长",
+                align : "center"
+            }, {
+                field : "coursewareName",
+                title : "视频名",
+                align : "center",
+            },{
+                field : "remark",
+                title : "视频简介",
+                align : "center",
+            },
+
+                {
+                    title : "操作",
+                    width : 170,
+                    fixed : "right",
+                    align : "center",
+                    toolbar : "#coursewarelistBar"
+                } ] ],
+            url : 'http://localhost:8080/learning/courseWare/list',
+            cellMinWidth : 80, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+            page : true,
+            limits : [ 3, 5, 10 ],
+        });
+
+        //搜索, 条件查询
+        $(".search_btn").on("click", function() {
+            tableIns.reload({
+                page : {
+                    curr : 1
+                    //重新从第 1 页开始  ,！！！！！！！！！！！！！！备注：我用springboot在这里栽了跟头
+                },
+                where : {
+                    coursewareName : encodeURI($(".searchName").val()),
+                    courseName : encodeURI($(".courseName").val())
+
+                    //搜索的关键字
+                    /*   , code: $(".searchCode").val()  //搜索的关键字 */
+                }
+            });
+        });
+
+        //添加新视频
+        function addNews(location) {
+            var index = layui.layer.open({
+                title: ["视频","background-color: gray"],
+                type: 2,
+                anim:4,
+                maxmin:true,
+                content: location,
+                end: function () {
+                    tableIns.reload({
+                        page : {
+                            curr : 1
+                            //重新从第 1 页开始
+                        },
+
+                    });
+                    // layer.alert("操作结束");
+                },
+                success: function (layero, index) {
+                    layui.layer.getChildFrame('body', index);
+                    setTimeout(function () {
+                        layui.layer.tips('点击此处返回客户列表', '.layui-layer-setwin .layui-layer-close ', {
+                            tips: 3
+                        });
+                    }, 500)
+                },
+
+            })
+            layui.layer.full(index);
+        }
+
+        //监听工具条
+        table.on('tool(userTable)', function(obj) {//注：tool是工具条事件名，demo是table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data;//获得当前行数据
+            if (obj.event === 'learn') {//获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+                var location = "wareplay.html?coursewareId="+data.coursewareId;
+                // window.location.href = "wareplay.html?coursewareId="+data.coursewareId;
+                addNews(location);
+            }
+        });
+
+
+
+        $.ajax({
+            url:"http://localhost:8080/learning/user/getUserInfo",
+            type:"get",
+            data:{},
+            dataType:"json",
+            success:function(data){
+                var username = data.data.username;
+                var userNo = data.data.userNo;
+                $("#userInfo").text(username);
+
+            },
+            error:function(xmlHttpRequest,textStatus,errorThrown){
+                alert("用户已过期，请重新登录");
+                // alert(textStatus+"出错！"+errorThrown);
+            }
+        });
+
+
+        $("#exitUser").click(function(){
+            $.ajax({
+                url:"http://localhost:8080/learning/user/exitUser",
+                type:"get",
+                data:{},
+                dataType:"json",
+                success:function(data){
+                    window.location.href ="login.html";
+                },
+                error:function(xmlHttpRequest,textStatus,errorThrown){
+                    alert(textStatus+"出错！"+errorThrown);
+                }
+            });
+        });
+
+        $("#back").click(function(){
+            window.location.href ="welcome.html";
+        });
+
+
+    });
+</script>
+</body>
+</html>

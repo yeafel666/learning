@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>视频学习</title>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+<!--    <link href="plugins/videojs/video-js.css" rel="stylesheet">
+    <script src="plugins/videojs/video.js"></script>
+    <script>
+        _V_.options.flash.swf = "http://example.com/path/to/video-js.swf"
+    </script>-->
+    <link href="plugins/videojs/video-js.css" rel="stylesheet">
+    <!--<script src="plugins/videojs/video.js"></script>-->
+
+</head>
+<body>
+
+<div style="background: #35414F;height: 640px" >
+    <h3 style="font-family: 华文行楷;font-size: 300%;color: white;margin-left: 40%;">学习进度</h3>
+    <div  class="layui-progress" lay-showpercent="true" style="margin-top: 1%;width: 100%" lay-filter="progress">
+        <div class="layui-progress-bar"  lay-percent="0%" ></div>
+    </div>
+
+    <div id="introduction" style="font-family:华文琥珀;font-size: 200%;color:white;margin-left: 35%;margin-top: 1%"></div>
+
+<!--    <video id="example_video_1" class="video-js vjs-default-skin"
+           controls preload="auto" width="60%" height="40%"
+           poster=""   style="margin-left: 19%;margin-top: 0%"
+           data-setup='{"example_option":true}'  >
+        <source src="" type='video/mp4' />
+        <source src="" type='video/webm' />
+        <source src="" type='video/ogg' />
+    </video>-->
+<div style="margin-top: 5%;margin-left:15% ">
+    <video id="example_video_1" class="video-js vjs-default-skin vjs-big-play-centered" controls preload="none"  width="1000"  height="413" poster=""   data-setup="{}">
+        <source id="videoSrcMp4" src="" type="video/mp4">
+        <!--<source id="videoSrcWebm" src="" type="video/webm">-->
+        <!--<source id="videoSrcOgg" src="" type="video/ogg">-->
+
+        <!--<track kind="captions" src="../shared/example-captions.vtt" srclang="en" label="English"></track>-->
+        <!-- Tracks need an ending tag thanks to IE9 -->
+        <!--<track kind="subtitles" src="../shared/example-captions.vtt" srclang="en" label="English"></track>-->
+        <!-- Tracks need an ending tag thanks to IE9 -->
+    </video>
+</div>
+
+
+    <input type="hidden" name="coursewareId"  >
+
+    <input type="hidden" name="coursewarePath" id="coursewarePath"  >
+
+    <input type="hidden" name="coursewareImg" id="coursewareImg"  >
+
+    <input type="hidden" name="recordId" id="recordId"  >
+
+
+    <video style="display:none;" controls="controls" id="videoattr" oncanplaythrough="myFunction(this)">
+
+    </video>
+
+
+
+
+</div>
+</body>
+
+
+
+<script src="layui/layui.all.js"></script>
+
+
+<script type="text/javascript">
+    var video = document.getElementById("example_video_1");
+
+        layui.use(["layer","form", "upload","jquery","element"], function () {
+
+
+
+            video.ontimeupdate = function (ev) {
+                var currentTime = Math.floor(video.currentTime);    // 取得当前播放的时间，由于 currentTime 返回的是个浮点数，所以要向下取整
+                var allTime =Math.floor(video.duration);
+                var ac = Math.round(currentTime/allTime *10000)/100+'%';        //百分比
+                /*进度条监听视频*/
+
+                element.progress('progress', ac);
+                //一些事件监听
+                element.on('tab(progress)', function (data) {
+                    console.log(data);
+                });
+
+            }
+
+
+
+
+
+            video.onpause = function (ev) {
+                $.ajax({
+                    url:"http://localhost:8080/learning/courseWare/saveVideoRecord",
+                    type:"post",
+                    data:{
+                        recordId : $("#recordId").val(),
+                        coursewareId: coursewareId,
+                        videoCurrentTime:   video.currentTime
+                    },
+                    dataType:"json",
+                    success:function(data){
+                        var record = data.data;
+                        $("#recordId").val(record.recordId);
+                    },
+                    error:function(xmlHttpRequest,textStatus,errorThrown){
+                        alert(textStatus+"出错！"+errorThrown);
+                    }
+                });
+            }
+
+
+
+
+
+
+            // 注意：为了动态显示进度条，必须加载element组件
+            var layer = layui.layer,
+                upload = layui.upload,
+                $ = layui.jquery,
+                form = layui.form,
+                element = layui.element;
+
+            var Ohref=window.location.href;
+            var arrhref=Ohref.split("?coursewareId=");
+            // alert(arrhref[1]);
+            var coursewareId = arrhref[1];
+
+
+
+
+
+            (function(){
+                if (coursewareId !== undefined) {         //判断我是点的添加还是编辑
+                    /*此处是在编辑的时候根据userId在后台查询用户的全部信息并数据回显*/
+                    $.ajax({
+                        url:"http://localhost:8080/learning/courseWare/findByCoursewareId",
+                        type:"get",
+                        data:{coursewareId: coursewareId},
+                        dataType:"json",
+                        success:function(data){
+                            var courseware = data.data;
+                            // $("#userInfo").text(username + "    " + userNo);
+                            // window.location.href ="login.html";
+                            $("input[name='coursewareId']").val(courseware.coursewareId);
+                            $("input[name='coursewarePath']").val(courseware.coursewarePath);
+                            $("input[name='coursewareImg']").val(courseware.coursewareImg);
+                            $("input[name='coursewareName']").val(courseware.coursewareName);
+                            $("input[name='courseName']").val(courseware.courseName);
+                            $("input[name='duration']").val(courseware.duration);
+                            $("textarea[name='remark']").val(courseware.remark);
+
+
+
+                            $('#videoSrcMp4').attr('src', "video/"+courseware.coursewarePath); //视频链接
+                            document.getElementById("example_video_1").load();
+                            // $('#videoSrcWebm').attr('src', "video/"+courseware.coursewarePath); //视频链接
+                            // $('#videoSrcOgg').attr('src', "video/"+courseware.coursewarePath); //视频链接
+
+                            $('#introduction').html("视频简介："+courseware.remark); //简介
+
+                        },
+                        error:function(xmlHttpRequest,textStatus,errorThrown){
+                            alert(textStatus+"出错！"+errorThrown);
+                        }
+                    });
+                }
+            })();
+
+
+            $.ajax({
+                url:"http://localhost:8080/learning/courseWare/getCurrent",
+                type:"get",
+                data:{coursewareId:coursewareId},
+                dataType:"json",
+                success:function(data){
+                    var record = data.data;
+                    $("#recordId").val(record.recordId);
+                    video.currentTime = record.videoCurrentTime;
+                },
+                error:function(xmlHttpRequest,textStatus,errorThrown){
+                    alert(textStatus+"出错！"+errorThrown);
+                }
+            });
+
+
+
+
+
+
+
+
+
+        });
+
+
+
+
+
+
+</script>
+<script type="text/javascript">
+
+</script>
+</html>

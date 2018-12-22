@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文件上传</title>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+</head>
+<body>
+
+<fieldset class="layui-elem-field layui-field-title"
+          style="margin-top: 50px;">
+    <legend>课件上传</legend>
+</fieldset>
+<form  class="layui-form layui-form-pane" >
+
+    <input type="hidden" name="coursewareId"  >
+
+    <input type="hidden" name="coursewarePath" id="coursewarePath"  >
+
+    <input type="hidden" name="coursewareImg" id="coursewareImg"  >
+
+
+    <video style="display:none;" controls="controls" id="videoattr" oncanplaythrough="myFunction(this)">
+
+    </video>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">视频名称</label>
+        <div class="layui-input-inline">
+            <input name="coursewareName" id="coursewareName" lay-verify="required" placeholder="请输入视频名称"
+                   autocomplete="off" class="layui-input" type="text" style="width: 800px">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">视频分类</label>
+        <div class="layui-input-inline">
+            <input name="courseName" id="courseName" lay-verify="required" placeholder="请选择课程"
+                   autocomplete="off" class="layui-input" type="text">
+        </div>
+    </div>
+
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">视频时长</label>
+        <div class="layui-input-block">
+            <input name="duration" id="duration" lay-verify="required"   autocomplete="off" placeholder="请输入视频时长"
+                   class="layui-input" type="text" >
+        </div>
+    </div>
+
+    <span id="getDuration"></span>
+
+    <button type="button" class="layui-btn" id="addFile">
+        <i class="layui-icon">&#xe67c;</i>请选择视频     (可拖拽)
+    </button>
+
+
+    <button type="button" class="layui-btn" id="upload" >上传</button>
+    <div class="layui-progress layui-progress-big" lay-showpercent="true" lay-filter="uploadProgressBar">
+        <div class="layui-progress-bar" lay-percent="0%"></div>
+    </div>
+
+
+    <div class="layui-form-item"  style="margin-top: 20px">
+        <label class="layui-form-label">视频简介</label>
+        <div class="layui-input-inline">
+            <textarea name="remark" lay-verify="required" placeholder="视频简介"
+                      autocomplete="off" class="layui-input" type="text" style="width: 300px;height: 100px"></textarea>
+        </div>
+    </div>
+
+
+
+
+    <div class="layui-form-item">
+        <button class="layui-btn" lay-submit="" lay-filter="form1" >提交</button>
+    </div>
+
+    <!--<input type="file" onchange="changeFile(this)" />-->
+</form>
+
+
+
+</body>
+
+<script src="layui/layui.all.js"></script>
+<script src="layui/lay/modules/tableSelect.js"></script>
+<script type="text/javascript">
+
+    var tableSelect = layui.tableSelect;
+
+    /** 监听课程input框 */
+    tableSelect.render({
+        elem: '#courseName',
+        searchKey: 'courseName',	//搜索输入框的name值 默认keyword
+        searchPlaceholder: '课程名搜索',	//搜索输入框的提示文字 默认关键词搜索
+        table: {
+            url:'http://localhost:8080/learning/course/list',
+            cols: [[
+                { type: 'radio' },
+                { field: 'courseId', title: 'ID' },
+                { field: 'courseName', title: '课程名' },
+                { field: 'cnum', title: '课程编号' }
+            ]],
+            cellMinWidth : 80, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+            height: 150,
+            page : true,
+            limits : [ 3, 5, 10 ],
+        },
+        done: function (elem, data) {
+            var NEWJSON = []
+            layui.each(data.data, function (index, item) {
+                NEWJSON.push(item.courseName)
+            })
+            elem.val(NEWJSON.join(","))
+        }
+    });
+
+</script>
+
+<script type="text/javascript">
+    function myFunction(ele) {
+        var hour = parseInt((ele.duration)/3600);
+        var minute = parseInt((ele.duration%3600)/60);
+        var second = Math.ceil(ele.duration%60);
+        var time = hour+"小时，"+minute+"分，"+second+"秒";
+        //console.log(Math.floor(ele.duration));
+        //document.write("这段视频的时长为："+hour+"小时，"+minute+"分，"+second+"秒");
+        // document.getElementById("getDuration").innerHTML=time;
+        document.getElementById("duration").value = time;
+
+    }
+
+
+    /*我在js里面监听了，此处注释*/
+    /*
+    function changeFile(ele){
+        var video = ele.files[0];
+        var url = URL.createObjectURL(video);
+        console.log(url);
+        document.getElementById("videoattr").src = url;
+    }*/
+</script>
+
+<script type="text/javascript">
+    layui.use(["layer","form", "upload","jquery","element"], function () {
+
+        //创建监听函数
+        var xhrOnProgress=function(fun) {
+            xhrOnProgress.onprogress = fun; //绑定监听
+            //使用闭包实现监听绑
+            return function() {
+                //通过$.ajaxSettings.xhr();获得XMLHttpRequest对象
+                var xhr = $.ajaxSettings.xhr();
+                //判断监听函数是否为函数
+                if (typeof xhrOnProgress.onprogress !== 'function')
+                    return xhr;
+                //如果有监听函数并且xhr对象支持绑定时就把监听函数绑定上去
+                if (xhrOnProgress.onprogress && xhr.upload) {
+                    xhr.upload.onprogress = xhrOnProgress.onprogress;
+                }
+                return xhr;
+            }
+        }
+
+
+
+
+
+        // 注意：为了动态显示进度条，必须加载element组件
+        var layer = layui.layer,
+            upload = layui.upload,
+            $ = layui.jquery,
+            form = layui.form;
+            element = layui.element;
+        upload.render({
+            accept : "video",
+            elem : "#addFile",
+            auto : false,   //关闭文件自动上传
+            bindAction : "#upload", //文件上传触发按钮
+            url : "courseWare/upload",
+            xhr: xhrOnProgress,
+            progress:function(value){//上传进度回调 value进度值
+                element.progress('uploadProgressBar', value+'%')//设置页面进度条
+            },
+            choose:function(obj){
+                //预读本地文件示例，不支持ie8
+                // layer.load(2);
+                obj.preview(function(index, file, result){
+                    var url = URL.createObjectURL(file);//把file转成URL
+                    $('#videoattr').attr('src', url); //视频链接
+                    $("#coursewareName").val(file.name);
+                });
+
+            },
+            before : function (obj) {
+                /* var intId = setInterval(function () {
+                     getUploadStatus(intId);
+                 }, 1000); //每秒向服务端获取一次当前上传进度情况*/
+            },
+            done : function (res, index, upload) {
+                if(res.code != 200){
+                    layer.open({
+                        icon : 2,
+                        skin : "layui-layer-molv",
+                        content : res.msg
+                    });
+                }else {
+                    $("#coursewarePath").val(res.path);
+                    $("#coursewareImg").val(res.imgPath);
+                    layer.open({
+                        icon : 6,
+                        skin : "layui-layer-molv",
+                        content : res.msg
+                    });
+                }
+            },
+            error : function (index, upload) {
+                element.progress('demo', '0%');
+                layer.msg('上传失败');
+            }
+        });
+
+        //表单提交
+        form.on("submit(form1)", function (data) {
+            /* layer.alert(($("#userId").val()==null || $("#userId").val()=='') ? "添加成功!" : "修改成功!", {icon: 1}); */
+            $.post("http://localhost:8080/learning/courseWare/save", data.field,function(d){
+                if (d.code === 15 || d.code === 16){
+                    layer.msg("很抱歉！操作失败了。",{icon: 5,time: 1500},function(){
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index); //再执行关闭
+                    });
+                }else if (d.code === 0) {
+                    layer.msg("恭喜您！操作成功了。",{icon: 6,time: 1500},function(){
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index); //再执行关闭
+                    });
+                }
+            },"json");
+
+
+            return false;
+        });
+
+    });
+</script>
+</html>

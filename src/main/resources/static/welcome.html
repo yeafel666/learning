@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎来到在线学习系统</title>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="./css/treemenufront.css" media="all">
+</head>
+<body>
+<div>
+
+
+    <div class="layui-header">
+
+        <ul class="layui-nav">
+            <li class="layui-anim layui-anim-rotate layui-nav-item" style="margin-left: 36%;">
+                <img src="img/login/logo.png">
+            </li>
+        </ul>
+        <!--     头部区域（可配合layui已有的水平导航） -->
+        <ul class="layui-nav layui-layout-right ">
+            <li style="top: 11px;right:20px;position: absolute"><button class="layui-btn layui-bg-blue " id="exitUser">注销</button></li>
+        </ul>
+    </div>
+
+    <div class="layui-body">
+
+        <h3 style="font-family: 华文行楷;font-size: 30px;margin-top: 10%;margin-left: 18%;"  id="userInfo"></h3>
+
+
+
+        <div class="layui-carousel" style="margin-top: 4%;margin-left: 4%;margin-right: 25%;" id="test1">
+            <div carousel-item>
+                <div><a href="#"><img src="img/login/carousel1.jpg"></a></div>
+                <div><a href="#"><img src="img/login/carousel2.jpg"></a></div>
+                <div><a href="#"><img src="img/login/carousel3.jpg"></a></div>
+                <div><a href="#"><img src="img/login/carousel4.jpg"></a></div>
+                <div><a href="#"><img src="img/login/carousel5.jpg"></a></div>
+            </div>
+        </div>
+
+
+            <a href="study.html">
+                <button style="margin-top: 5%;margin-left: 38%;" class="layui-btn layui-btn-lg layui-btn-radius layui-btn-normal">
+                    去学习 Go!
+                </button>
+            </a>
+
+    </div>
+
+
+    <!-- 左菜单 -->
+        <div class="layui-anim" style="margin-top:10%;height: 100%;width: 100px;%;background-color: #35414F">
+                <div class="layui-colorpicker-side-sl   ider layui-bg-black" >
+                <div id="sidemenubar" lay-filter="test"></div>
+            </div>
+        </div>
+
+
+
+
+
+</div>
+
+<script src="./layui/layui.all.js"></script>
+<script>
+    //JavaScript代码区域
+    layui.use(['element','carousel'], function(){
+        var element = layui.element,
+            $ = layui.jquery,
+            carousel = layui.carousel;
+
+
+        //建造实例
+        carousel.render({
+            elem: '#test1'
+            ,width: '78%' //设置容器宽度
+            ,height: '46%'
+            ,arrow: 'always' //始终显示箭头
+            // ,anim: 'updown' //切换动画方式
+        });
+
+
+
+        $.ajax({
+            url:"http://localhost:8080/learning/user/getUserInfo",
+            type:"get",
+            data:{},
+            dataType:"json",
+            success:function(data){
+                var username = data.data.username;
+                var userNo = data.data.userNo;
+                $("#userInfo").text(username + "，欢迎您的到来，请尽情享受学习吧！");
+
+            },
+            error:function(xmlHttpRequest,textStatus,errorThrown){
+                alert("用户已过期，请重新登录");
+                // alert(textStatus+"出错！"+errorThrown);
+            }
+        });
+
+
+        $("#exitUser").click(function(){
+            $.ajax({
+                url:"http://localhost:8080/learning/user/exitUser",
+                type:"get",
+                data:{},
+                dataType:"json",
+                success:function(data){
+                    window.location.href ="login.html";
+                },
+                error:function(xmlHttpRequest,textStatus,errorThrown){
+                    alert(textStatus+"出错！"+errorThrown);
+                }
+            });
+        });
+
+
+        //添加选中颜色显示
+
+        $("body").on("mouseover", ".layui-tree a", function() {
+
+            if(!$(this).siblings('ul').length) {
+
+                $(".layui-tree a").removeClass('active');
+
+                $(this).find('cite').parent().addClass('active');
+
+            }
+
+        });
+
+
+        $.ajax({
+            url:"http://localhost:8080/learning/tree/getTree",
+            type:"get",
+            data:{},
+            dataType:"json",
+            success:function(data){
+                layui.tree({
+                    elem: '#sidemenubar' //传入元素选择器
+                    ,skin: 'sidebar'  //自定义tree样式的类名
+                    ,nodes: [data.data]
+                    ,target:'content'
+                    ,click: function(node,item){
+                        //node即为当前点击的节点数据,item就是被点击的a标签对象了
+                        //导航按钮选中当前
+                        $('#sidemenubar a').removeClass('active');
+                        $(item).addClass('active');
+                        $(item).siblings('.layui-tree-spread').click();
+                    }
+                });
+                // alert(data.data.actionName);
+            },
+            error:function(xmlHttpRequest,textStatus,errorThrown){
+                alert(textStatus+"出错！"+errorThrown);
+            }
+        });
+
+
+    });
+</script>
+</body>
+</html>

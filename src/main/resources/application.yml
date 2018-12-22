@@ -1,0 +1,25 @@
+spring:
+  datasource:
+#    driver-class-name: com.mysql.jdbc.Driver     #我在创建项目的时候自动构建了
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/learning?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false
+#    链接的mysql
+
+  jpa:
+    show-sql: true
+  jackson:
+    default-property-inclusion: non_null
+  servlet:
+    multipart:
+      enabled: false         #使用重写后文件上传解析，以添加上传进度监听功能
+      max-request-size: 1024MB    #设置一次请求中允许上传的文件大小
+      max-file-size: 1024MB         #设置允许上传的文件的大小
+
+
+
+
+server:
+  servlet:
+    context-path: /learning
+
